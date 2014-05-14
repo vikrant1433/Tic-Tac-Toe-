@@ -5,30 +5,33 @@ import java.util.Scanner;
  * Created by Vikrant on 2/3/14.
  */
 class TicTacToe {
+	private final static char PLAYER_1_CHOICE = 'X';
+	private static char CHOICE = PLAYER_1_CHOICE;
+	private final static char PLAYER_2_CHOICE = '#';
+	private final static char VACANT = '_';
+	private final static Integer COMPUTER = 3;
+	private final static Integer COMPUTER_1 = 4;
+	private final static Integer COMPUTER_2 = 5;
+	private static Integer player1;
+	private static Integer currTurn = player1;
+	private static Integer player2;
+	private static String playerOneName = null;
+	private static String playerTwoName = null;
 	private final Scanner sc = new Scanner(System.in);
 	private final Random r = new Random();
-	private int N = 3;
-	private int numBoxFilled = 0;
+	private final int N = 3;
 	private final char[][] x;
-	private final char player1Choice = 'X';
-	private final char player2Choice = '#';
-	private final char vacant = '_';
+	private int numBoxFilled = 0;
 	private int currentFilledBox = -1;
-	private String player1 = "player1";
-	private String currTurn = player1;
-	private String player2 = "player2";
-	private final String computer = "pc";
-	private final String computer1 = "pc1";
-	private final String computer2 = "pc2";
-	private char choice = 'X';
 
 	public TicTacToe() {
 		x = new char[N][N];
 		for (byte i = 0; i < N; i++) {
 			for (byte j = 0; j < N; j++) {
-				x[i][j] = vacant;
+				x[i][j] = VACANT;
 			}
 		}
+
 	}
 
 	private void menu() {
@@ -40,13 +43,11 @@ class TicTacToe {
 		menu();
 		displayGrid();
 		while (!isBoxFull()) {
-			player1Turn();
-			if (isSome1Won()) return;
-			display();
-			if (isBoxFull())
-				break;
-			player2Turn();
-			if (isSome1Won()) return;
+			turn();
+			if (isPlayerWin()) {
+				printWinningMessage();
+				return;
+			}
 			display();
 		}
 		matchDrawn();
@@ -62,32 +63,44 @@ class TicTacToe {
 		int choice = sc.nextInt();
 		if (choice == 1) {
 			System.out.print("Enter your name: ");
-			player1 = sc.next();
-			player2 = computer;
+			playerOneName = sc.next();
+			playerTwoName = "PC";
+			player1 = 1;
+			player2 = COMPUTER;
 		} else if (choice == 2) {
 			System.out.print("Enter player1 name:\t");
-			player1 = sc.next();
+			player1 = 1;
+			playerOneName = sc.next();
 			System.out.print("Enter player2 name:\t");
-			player2 = sc.next();
+			player2 = 2;
+			playerTwoName = sc.next();
 		} else {
-			player1 = computer1;
-			player2 = computer2;
+			player1 = COMPUTER_1;
+			playerOneName = "PC1";
+			player2 = COMPUTER_2;
+			playerTwoName = "PC2";
 		}
 	}
 
 	private void turn() {
-		if (currTurn.equals(computer) || currTurn.equals(computer1) || currTurn.equals(computer2)) {
+
+		if (currTurn.equals(player1))
+			currTurn = player2;
+		else
+			currTurn = player1;
+
+		if (currTurn.equals(COMPUTER) || currTurn.equals(COMPUTER_1) || currTurn.equals(COMPUTER_2)) {
 			computerTurn();
 		} else {
-			System.out.print(currTurn + "'s turn : ");
+			System.out.print(getCurrTurnName() + "'s turn : ");
 			Scanner sc = new Scanner(System.in);
-			int t = 0;
+			int t;
 			while (true) {
 				t = sc.nextInt();
 				if (1 <= t && t <= N * N && isVacant(t))
 					break;
 				displayGrid();
-				System.out.println("Invalid choice try again");
+				System.out.println("Invalid CHOICE try again");
 			}
 			fillBox(currTurn, t);
 		}
@@ -101,30 +114,20 @@ class TicTacToe {
 		fillBox(currTurn, t);
 	}
 
-	private void fillBox(String player, int t) {
+	private void fillBox(Integer player, int t) {
 
 		if (player.equals(player1)) {
-			choice = player1Choice;
+			CHOICE = PLAYER_1_CHOICE;
 		} else {
-			choice = player2Choice;
+			CHOICE = PLAYER_2_CHOICE;
 		}
 		numBoxFilled++;
 		currentFilledBox = t;
 		markBox();
 	}
 
-	private void player2Turn() {
-		currTurn = player2;
-		turn();
-	}
-
-	private void player1Turn() {
-		currTurn = player1;
-		turn();
-	}
-
 	private void markBox() {
-		x[getRow(currentFilledBox)][getColumn(currentFilledBox)] = choice;
+		x[getRow(currentFilledBox)][getColumn(currentFilledBox)] = CHOICE;
 	}
 
 	private int getColumn(int t) {
@@ -138,7 +141,7 @@ class TicTacToe {
 	}
 
 	private boolean isVacant(int t) {
-		return x[getRow(t)][getColumn(t)] == vacant;
+		return x[getRow(t)][getColumn(t)] == VACANT;
 	}
 
 	private void displayGrid() {
@@ -168,17 +171,9 @@ class TicTacToe {
 		return i * N + j + 1;
 	}
 
-	private boolean isSome1Won() {
-		if (isPlayerWin()) {
-			won();
-			return true;
-		}
-		return false;
-	}
-
 	private void display() {
 		displayGrid();
-		System.out.println(currTurn + "'s has marked " + currentFilledBox);
+		System.out.println(getCurrTurnName() + "'s has marked " + currentFilledBox);
 	}
 
 	private void matchDrawn() {
@@ -186,9 +181,13 @@ class TicTacToe {
 		System.out.println("Match Drawn");
 	}
 
-	private void won() {
+	private String getCurrTurnName() {
+		return currTurn.equals(player1) ? playerOneName : playerTwoName;
+	}
+
+	private void printWinningMessage() {
 		displayGrid();
-		System.out.println(currTurn + " has Won" + "\nGame Over");
+		System.out.println(getCurrTurnName() + " has Won" + "\nGame Over");
 	}
 
 	private boolean isPlayerWin() {
@@ -198,7 +197,7 @@ class TicTacToe {
 	private boolean checkOffDiagonal() {
 		char bottomCorner = x[N - 1][0];
 		for (int i = 0; i < N; i++) {
-			if (x[N - 1 - i][i] == vacant || x[N - i - 1][i] != bottomCorner)
+			if (x[N - 1 - i][i] == VACANT || x[N - i - 1][i] != bottomCorner)
 				return false;
 		}
 		return true;
@@ -207,7 +206,7 @@ class TicTacToe {
 	private boolean checkOnDiagonal() {
 		char topCorner = x[0][0];
 		for (int i = 0; i < N; i++) {
-			if (x[i][i] == vacant || x[i][i] != topCorner)
+			if (x[i][i] == VACANT || x[i][i] != topCorner)
 				return false;
 		}
 		return true;
@@ -221,7 +220,7 @@ class TicTacToe {
 	private boolean isColumnFull(int currentFilledBox) {
 		int column = getColumn(currentFilledBox);
 		for (int i = 0; i < N - 1; i++) {
-			if (x[i][column] != x[i + 1][column] || x[i][column] == vacant) {
+			if (x[i][column] != x[i + 1][column] || x[i][column] == VACANT) {
 				return false;
 			}
 		}
