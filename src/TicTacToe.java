@@ -12,9 +12,9 @@ class TicTacToe {
 	private final static Integer COMPUTER = 3;
 	private final static Integer COMPUTER_1 = 4;
 	private final static Integer COMPUTER_2 = 5;
-	private static Integer player1;
+	private static Integer player1 = 1;
 	private static Integer currTurn = player1;
-	private static Integer player2;
+	private static Integer player2 = 2;
 	private static String playerOneName = null;
 	private static String playerTwoName = null;
 	private final Scanner sc = new Scanner(System.in);
